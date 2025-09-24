@@ -45,10 +45,7 @@ export class PostsService {
     return deletedPost[0];
   }
 
-  updatePostById(
-    id: number,
-    updatePostObject: Omit<Post, 'id' | 'createdAt'>,
-  ): number {
+  updatePostById(id: number, updatePostObject: Partial<Post>): number {
     const postIndexToEdit = this.posts.findIndex((post) => post.id === id);
     if (postIndexToEdit === -1) {
       throw new NotFoundException('No post found');
