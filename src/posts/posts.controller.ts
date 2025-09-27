@@ -14,30 +14,24 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { Post as PostInterface } from './interfaces/post.interface';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostExistsPipe } from './pipes/post-exists.pipe';
+import { Post as PostEntity } from './entities/post.entity';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getAllPosts(@Query('search') search?: string): PostInterface[] {
-    const allPosts = this.postsService.getAllPosts();
-    if (search) {
-      return allPosts.filter((post: PostInterface) =>
-        post.title.toLowerCase().includes(search),
-      );
-    }
-    return allPosts;
+  async getAllPosts(): Promise<PostEntity[]> {
+    return this.postsService.getAllPosts();
   }
 
   @Get(':id')
-  getPostById(
+  async getPostById(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
-  ): PostInterface {
+  ): Promise<PostEntity> {
     return this.postsService.getPostById(id);
   }
 
@@ -49,14 +43,14 @@ export class PostsController {
       forbidNonWhitelisted: true,
     }),
   ) // route level validation pipe - can be used if there is controller specific validations required else global level is good
-  create(@Body() createPostBody: CreatePostDto): PostInterface {
+  async create(@Body() createPostBody: CreatePostDto): Promise<PostEntity> {
     return this.postsService.createPost(createPostBody);
   }
 
   @Delete(':id')
-  deletePostById(
+  async deletePostById(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
-  ): PostInterface {
+  ): Promise<void> {
     return this.postsService.deletePostById(id);
   }
 
@@ -67,10 +61,10 @@ export class PostsController {
       forbidNonWhitelisted: true,
     }),
   )
-  updatePostById(
+  async updatePostById(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
     @Body() updatePostBody: UpdatePostDto,
-  ): number {
+  ): Promise<PostEntity> {
     return this.postsService.updatePostById(id, updatePostBody);
   }
 }
