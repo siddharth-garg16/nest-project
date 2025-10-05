@@ -8,6 +8,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { UserRole } from './entities/user.entity';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
+import { LoginThrottleGuard } from './guards/login-throttle.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
     return this.authService.registerUser(registerDto);
   }
 
+  @UseGuards(LoginThrottleGuard)
   @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
     return this.authService.loginUser(loginDto);
