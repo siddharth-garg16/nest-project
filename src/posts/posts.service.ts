@@ -16,6 +16,19 @@ export class PostsService {
   async getAllPosts(): Promise<Post[]> {
     return await this.postRepository.find({
       relations: ['authorName'],
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        authorName: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     });
   }
 
@@ -23,6 +36,19 @@ export class PostsService {
     const matchingPost = await this.postRepository.findOne({
       where: { id: id },
       relations: ['authorName'],
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        authorName: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
     });
     if (!matchingPost) {
       throw new NotFoundException(`No post found`);
