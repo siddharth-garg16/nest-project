@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-// import { Post } from './interfaces/post.interface';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { User, UserRole } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class PostsService {
@@ -14,22 +14,30 @@ export class PostsService {
   ) {}
 
   async getAllPosts(): Promise<Post[]> {
-    return await this.postRepository.find();
+    return await this.postRepository.find({
+      relations: ['authorName'],
+    });
   }
 
   async getPostById(id: number): Promise<Post> {
-    const matchingPost = await this.postRepository.findOneBy({ id: id });
+    const matchingPost = await this.postRepository.findOne({
+      where: { id: id },
+      relations: ['authorName'],
+    });
     if (!matchingPost) {
       throw new NotFoundException(`No post found`);
     }
     return matchingPost;
   }
 
-  async createPost(newPostObject: CreatePostDto): Promise<Post> {
+  async createPost(
+    newPostObject: CreatePostDto,
+    authorName: User,
+  ): Promise<Post> {
     const newPost = this.postRepository.create({
       title: newPostObject.title,
       content: newPostObject.content,
-      authorName: newPostObject.authorName,
+      authorName: authorName,
     });
     return this.postRepository.save(newPost);
   }
@@ -45,16 +53,22 @@ export class PostsService {
   async updatePostById(
     id: number,
     updatePostObject: UpdatePostDto,
+    user: User,
   ): Promise<Post> {
     const postToUpdate = await this.getPostById(id);
+    if (
+      postToUpdate.authorName.id !== user.id &&
+      user.role !== UserRole.ADMIN
+    ) {
+      throw new UnauthorizedException(
+        `You are not authorized to update this post`,
+      );
+    }
     if (updatePostObject.title) {
       postToUpdate.title = updatePostObject.title;
     }
     if (updatePostObject.content) {
       postToUpdate.content = updatePostObject.content;
-    }
-    if (updatePostObject.authorName) {
-      postToUpdate.authorName = updatePostObject.authorName;
     }
 
     return this.postRepository.save(postToUpdate);
