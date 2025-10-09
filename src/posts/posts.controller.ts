@@ -24,6 +24,8 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/auth/entities/user.entity';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { PaginationResponse } from 'src/common/interfaces/pagination-response.interface';
+import { FindPostQueryDto } from './dto/find-posts.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -31,8 +33,10 @@ export class PostsController {
 
   @HttpCode(HttpStatus.OK)
   @Get()
-  async getAllPosts(): Promise<PostEntity[]> {
-    return this.postsService.getAllPosts();
+  async getAllPosts(
+    @Query() query: FindPostQueryDto,
+  ): Promise<PaginationResponse<PostEntity>> {
+    return this.postsService.getAllPosts(query);
   }
 
   @HttpCode(HttpStatus.OK)
