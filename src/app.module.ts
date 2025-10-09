@@ -10,6 +10,8 @@ import { User } from './auth/entities/user.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -39,9 +41,18 @@ import { FileUploadModule } from './file-upload/file-upload.module';
       ttl: 30000,
       max: 200, // maximum number of items in cache
     }),
+    EventEmitterModule.forRoot({
+      global: true,
+      wildcard: false,
+      maxListeners: 10,
+      delimiter: '.',
+      verboseMemoryLeak: true,
+      ignoreErrors: false,
+    }),
     PostsModule,
     AuthModule,
     FileUploadModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
